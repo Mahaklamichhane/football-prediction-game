@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Predictions — 246 Impex Fantasy · FIFA WC 2026</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-page="matches">
+
+  <nav>
+    <a href="index.html" class="nav-logo">
+      <span class="ball">⚽</span>
+      246 Impex Fantasy
+    </a>
+    <ul class="nav-links">
+      <li><a href="index.html">Leaderboard</a></li>
+      <li><a href="matches.html" class="active">Predictions</a></li>
+      <li><a href="results.html">Results</a></li>
+      <li><a href="admin.html">Admin</a></li>
+    </ul>
+  </nav>
+
+  <main>
+    <h1 class="page-title">Match Predictions</h1>
+    <p class="page-subtitle">FIFA World Cup 2026 · 48 teams · 12 groups · 72 matches</p>
+
+    <!-- Register / identify -->
+    <div class="register-card">
+      <div class="register-left">
+        <h3>New player? Join the league</h3>
+        <form id="register-form" class="reg-form">
+          <input type="text" id="reg-name" class="reg-input" placeholder="Enter your full name" autocomplete="off" maxlength="40">
+          <button type="submit" class="btn-primary">Join</button>
+        </form>
+      </div>
+      <div class="register-divider">or</div>
+      <div class="register-right">
+        <h3>Already joined? Select your name</h3>
+        <select id="player-select" class="player-sel"></select>
+      </div>
+    </div>
+
+    <div id="active-player-banner" class="active-banner" style="display:none"></div>
+
+    <div class="section-header" style="margin-top:1.5rem">
+      <h2>Group Stage Matches</h2>
+      <span class="tag">Jun 11 – Jun 27</span>
+    </div>
+
+    <div id="matches-list">
+      <p class="empty-state">Select or register your name above to start predicting.</p>
+    </div>
+  </main>
+
+  <script src="data.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>

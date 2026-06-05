@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Leaderboard — 246 Impex Fantasy · FIFA WC 2026</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-page="leaderboard">
+
+  <nav>
+    <a href="index.html" class="nav-logo">
+      <span class="ball">⚽</span>
+      246 Impex Fantasy
+    </a>
+    <ul class="nav-links">
+      <li><a href="index.html" class="active">Leaderboard</a></li>
+      <li><a href="matches.html">Predictions</a></li>
+      <li><a href="results.html">Results</a></li>
+      <li><a href="admin.html">Admin</a></li>
+    </ul>
+  </nav>
+
+  <main>
+    <div class="hero-banner">
+      <div class="hero-text">
+        <h1 class="page-title">Global Leaderboard</h1>
+        <p>FIFA World Cup 2026 · Predict. Score. Dominate.</p>
+      </div>
+      <div class="live-badge">
+        <span class="live-dot"></span>
+        Live Rankings
+      </div>
+    </div>
+
+    <div class="stats-bar">
+      <div class="stat-card">
+        <span class="stat-num" id="stat-players">0</span>
+        <span class="stat-label">Players</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-num" id="stat-matches">0</span>
+        <span class="stat-label">Completed</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-num" id="stat-total-m">72</span>
+        <span class="stat-label">Total Matches</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-num" id="stat-top">0</span>
+        <span class="stat-label">Top Score</span>
+      </div>
+    </div>
+
+    <div class="section-header">
+      <h2>Rankings</h2>
+      <span class="tag">All Players</span>
+    </div>
+
+    <div id="leaderboard-body"></div>
+  </main>
+
+  <script src="data.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>

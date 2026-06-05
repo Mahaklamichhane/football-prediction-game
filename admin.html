@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin — 246 Impex Fantasy · FIFA WC 2026</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-page="admin">
+
+  <nav>
+    <a href="index.html" class="nav-logo">
+      <span class="ball">⚽</span>
+      246 Impex Fantasy
+    </a>
+    <ul class="nav-links">
+      <li><a href="index.html">Leaderboard</a></li>
+      <li><a href="matches.html">Predictions</a></li>
+      <li><a href="results.html">Results</a></li>
+      <li><a href="admin.html" class="active">Admin</a></li>
+    </ul>
+  </nav>
+
+  <main>
+    <h1 class="page-title">Admin Panel</h1>
+    <p class="page-subtitle">Enter final scores to calculate points. All 72 WC 2026 group stage matches are pre-loaded.</p>
+
+    <!-- Add custom match -->
+    <div class="admin-section">
+      <h2>➕ Add Custom Match</h2>
+      <form id="add-match-form">
+        <div class="add-match-grid">
+          <div class="field-group">
+            <label for="new-team-a">Team A (Home / Favourite)</label>
+            <input type="text" id="new-team-a" class="admin-text-input" placeholder="e.g. Real Madrid" autocomplete="off" required>
+          </div>
+          <div class="field-group">
+            <label for="new-team-b">Team B (Away / Underdog)</label>
+            <input type="text" id="new-team-b" class="admin-text-input" placeholder="e.g. Ajax" autocomplete="off" required>
+          </div>
+          <div class="field-group">
+            <label for="new-match-date">Match Date</label>
+            <input type="date" id="new-match-date" class="admin-text-input">
+          </div>
+          <button type="submit" class="btn-primary btn-add">Add Match</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Score entry -->
+    <div class="admin-section">
+      <h2>⚽ Enter Final Scores</h2>
+      <p style="font-size:.8rem;color:var(--text-muted);margin-bottom:14px">
+        Enter the final score and click <strong>Calculate Results</strong> to award points.
+        Team B is the underdog — a Team B win grants a +2 bonus to correct predictors.
+      </p>
+      <div id="admin-matches"></div>
+    </div>
+
+    <!-- Scoring reference -->
+    <div class="admin-section">
+      <h2>📋 Scoring Reference</h2>
+      <div class="scoring-grid">
+        <div class="score-ref-card"><span style="color:var(--neon)">+3</span><small>Correct result (W/D/L)</small></div>
+        <div class="score-ref-card"><span style="color:var(--gold)">+5</span><small>Exact score</small></div>
+        <div class="score-ref-card"><span style="color:var(--accent)">+2</span><small>Correct goal difference</small></div>
+        <div class="score-ref-card"><span style="color:var(--accent)">+2</span><small>Correct total goals</small></div>
+        <div class="score-ref-card"><span style="color:#f97316">+2</span><small>Underdog (Team B) win</small></div>
+        <div class="score-ref-card"><span style="color:var(--text-muted)">12</span><small>Max pts per match</small></div>
+      </div>
+    </div>
+
+    <!-- Danger zone -->
+    <div class="admin-section danger-zone">
+      <h2>⚠️ Danger Zone</h2>
+      <p style="font-size:.85rem;color:var(--text-muted);margin-bottom:14px">
+        Wipes all players, predictions, and results. Match schedule will regenerate from FIFA WC 2026 defaults.
+      </p>
+      <button id="btn-reset" class="btn-danger">Reset All Data</button>
+    </div>
+  </main>
+
+  <script src="data.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
