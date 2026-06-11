@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="color-scheme" content="light only">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Predictions — 246 Impex Fantasy League · FIFA WC 2026</title>
+  <link rel="stylesheet" href="style.css?v=20260611">
+</head>
+<body data-page="matches">
+
+  <!-- Auth overlay -->
+  <div id="auth-overlay">
+    <div class="auth-modal">
+      <div class="auth-modal-header">
+        <img src="logo.jpeg" alt="246 Impex" onerror="this.style.display='none'">
+        <div>
+          <h2>Verify Your Identity</h2>
+          <p>Enter your details to access the prediction game.</p>
+        </div>
+      </div>
+
+      <form id="auth-form" autocomplete="off">
+        <div class="auth-field">
+          <label for="auth-name">Full Name</label>
+          <input type="text" id="auth-name" class="auth-input" placeholder="e.g. John Smith" autocomplete="off" required>
+        </div>
+        <div class="auth-field">
+          <label for="auth-phone">Phone Number</label>
+          <input type="text" id="auth-phone" class="auth-input" placeholder="e.g. 0771234567" autocomplete="off" required>
+        </div>
+        <p id="auth-error" class="auth-error"></p>
+        <button type="submit" id="auth-btn" class="btn-auth" style="width:100%;margin-top:.5rem">
+          Join &amp; Play
+        </button>
+      </form>
+
+      <p style="font-size:.75rem;color:var(--text-muted);text-align:center;margin-top:12px">
+        Anyone can join — enter your name and phone number to get started!
+      </p>
+    </div>
+  </div>
+
+  <nav>
+    <div class="nav-inner">
+      <a href="index.html" class="nav-brand">
+        <img src="logo.jpeg" alt="246 Impex" class="nav-logo-img">
+        <div>
+          <span class="nav-brand-text">246 Impex Fantasy</span>
+          <span class="nav-brand-sub">⚽ FIFA World Cup 2026</span>
+        </div>
+      </a>
+      <ul class="nav-links">
+        <li><a href="index.html">Leaderboard</a></li>
+        <li><a href="matches.html" class="active">Predictions</a></li>
+        <li><a href="results.html">Results</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <main>
+    <div class="page-hero">
+      <div class="hero-text">
+        <div class="hero-eyebrow">⚽ Group Stage · Jun 11 – Jun 27, 2026</div>
+        <h1>Match Predictions</h1>
+        <p>48 teams · 12 groups · 72 matches · Lock in before kick-off!</p>
+      </div>
+      <div class="live-badge">
+        <span class="live-dot"></span>
+        Predictions Open
+      </div>
+      <div class="hero-logo-wrap">
+        <img src="logo.jpeg" alt="246 Impex" class="hero-logo-img">
+        <span class="hero-logo-tagline">246 Impex</span>
+      </div>
+    </div>
+
+    <!-- Fans excitement strip -->
+    <div class="fans-strip">
+      <img src="gettyimages-1425932671-612x612.jpg" alt="Football fans celebrating">
+      <div class="fans-strip-overlay">
+        <div class="fans-strip-icon">📣</div>
+        <div class="fans-strip-text">
+          <h3>Join 246 Impex's WC2026 Prediction Game</h3>
+          <p>Lock in your scores before kick-off · Every correct call earns points</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Player banner -->
+    <div class="player-banner" id="player-banner" style="display:none">
+      <span id="player-banner-text"></span>
+      <button id="logout-btn" class="btn-ghost" style="display:none">Change Player</button>
+    </div>
+
+    <div id="matches-container">
+      <p class="loading-state">Loading matches…</p>
+    </div>
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <img src="logo.jpeg" alt="246 Impex" class="footer-logo">
+        <div>
+          <div class="footer-brand-name">246 Impex Fantasy</div>
+          <div class="footer-brand-sub">Powered by 246 Impex · FIFA WC 2026</div>
+        </div>
+      </div>
+      <div class="footer-wc-badges">
+        <span class="footer-badge">⚽ 72 Matches</span>
+        <span class="footer-badge">🔒 Locks at Kick-off</span>
+        <span class="footer-badge">🏆 Max 8 pts/match</span>
+      </div>
+    </div>
+    <div class="footer-contact">
+      <a href="https://246impex.com.np/" target="_blank" rel="noopener" class="footer-contact-link">🌐 246impex.com.np</a>
+      <a href="https://wa.me/9779843737788" target="_blank" rel="noopener" class="footer-contact-link">💬 WhatsApp: 9843737788</a>
+      <a href="https://www.facebook.com/246impexnepal/" target="_blank" rel="noopener" class="footer-contact-link">📘 Facebook: 246impexnepal</a>
+    </div>
+    <div class="footer-copyright">© 2026 246 Impex · All rights reserved · FIFA World Cup 2026 Fantasy Prediction Game</div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="data.js?v=20260611"></script>
+  <script src="script.js?v=20260611"></script>
+
+  <script>
+    // Update banner text once session is known
+    document.addEventListener('DOMContentLoaded', () => {
+      const s = getSession();
+      if (s) {
+        const b = document.getElementById('player-banner');
+        if (b) b.querySelector('#player-banner-text').textContent = 'Playing as: ' + s.name;
+      }
+    });
+  </script>
+</body>
+</html>
