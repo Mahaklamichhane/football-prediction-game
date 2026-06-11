@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="color-scheme" content="light only">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin — 246 Impex Fantasy League · FIFA WC 2026</title>
+  <link rel="stylesheet" href="style.css?v=20260611">
+  <style>
+    /* ── Admin Login Gate ───────────────────────────────────── */
+    #admin-gate {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(7,16,42,.97) 0%, rgba(43,48,139,.95) 100%);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      z-index: 900;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+    #admin-gate.visible { display: flex; }
+
+    .gate-modal {
+      background: rgba(255,255,255,.96);
+      border-radius: 16px;
+      padding: 2.5rem 2rem;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: 0 24px 60px rgba(0,0,0,.45);
+      text-align: center;
+    }
+    .gate-modal .gate-logo {
+      width: 68px; height: 68px;
+      border-radius: 14px; object-fit: cover;
+      box-shadow: 0 0 0 3px rgba(43,48,139,.2), 0 8px 24px rgba(0,0,0,.25);
+      margin-bottom: 1rem;
+    }
+    .gate-modal h2 {
+      font-size: 1.25rem; font-weight: 800;
+      color: #2b308b; margin-bottom: 0.3rem;
+    }
+    .gate-modal p {
+      font-size: .82rem; color: #6b7280; margin-bottom: 1.5rem;
+    }
+    .gate-field { margin-bottom: 1rem; text-align: left; }
+    .gate-field label {
+      display: block; font-size: .78rem; font-weight: 600;
+      color: #374151; margin-bottom: 5px;
+    }
+    .gate-input {
+      width: 100%; padding: 10px 13px;
+      border: 1.5px solid #d1d5db; border-radius: 8px;
+      font-size: .9rem; background: #f9fafb;
+      transition: border-color .2s;
+      outline: none;
+    }
+    .gate-input:focus { border-color: #2b308b; background: #fff; }
+    .gate-error {
+      font-size: .8rem; color: #dc2626;
+      min-height: 18px; margin-bottom: 8px; text-align: left;
+    }
+    .gate-btn {
+      width: 100%; padding: 11px;
+      background: linear-gradient(135deg, #2b308b 0%, #3d44b8 100%);
+      color: #fff; font-weight: 700; font-size: .95rem;
+      border: none; border-radius: 9px; cursor: pointer;
+      transition: opacity .2s, transform .15s;
+    }
+    .gate-btn:hover { opacity: .9; transform: translateY(-1px); }
+    .gate-btn:disabled { opacity: .6; cursor: not-allowed; transform: none; }
+    .gate-lock-icon {
+      font-size: 2.5rem; margin-bottom: .75rem; display: block;
+    }
+  </style>
+</head>
+<body data-page="admin">
+
+  <!-- ── Admin Login Gate ──────────────────────────────────── -->
+  <div id="admin-gate">
+    <div class="gate-modal">
+      <span class="gate-lock-icon">🔐</span>
+      <img src="logo.jpeg" alt="246 Impex" class="gate-logo" onerror="this.style.display='none'">
+      <h2>Admin Access Only</h2>
+      <p>Enter your administrator credentials to continue.</p>
+      <form id="gate-form" autocomplete="off">
+        <div class="gate-field">
+          <label for="gate-user">Username</label>
+          <input type="text" id="gate-user" class="gate-input" placeholder="Username" autocomplete="off" required>
+        </div>
+        <div class="gate-field">
+          <label for="gate-pass">Password</label>
+          <input type="password" id="gate-pass" class="gate-input" placeholder="Password" autocomplete="off" required>
+        </div>
+        <p id="gate-error" class="gate-error"></p>
+        <button type="submit" id="gate-btn" class="gate-btn">Login</button>
+      </form>
+    </div>
+  </div>
+
+  <nav>
+    <div class="nav-inner">
+      <a href="index.html" class="nav-brand">
+        <img src="logo.jpeg" alt="246 Impex" class="nav-logo-img">
+        <div>
+          <span class="nav-brand-text">246 Impex — Admin</span>
+          <span class="nav-brand-sub">⚽ FIFA World Cup 2026</span>
+        </div>
+      </a>
+      <ul class="nav-links">
+        <li><a href="index.html">Leaderboard</a></li>
+        <li><a href="matches.html">Predictions</a></li>
+        <li><a href="results.html">Results</a></li>
+        <li><a href="admin.html" class="active">Admin ⚙</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <main>
+    <div class="page-hero">
+      <div class="hero-text">
+        <div class="hero-eyebrow">⚙️ Administrator · 246 Impex</div>
+        <h1>Admin Panel</h1>
+        <p>Enter actual scores to calculate and publish player points.</p>
+      </div>
+      <div class="hero-logo-wrap">
+        <img src="logo.jpeg" alt="246 Impex" class="hero-logo-img">
+        <span class="hero-logo-tagline">246 Impex</span>
+      </div>
+    </div>
+
+    <!-- Admin stats -->
+    <div class="admin-stats">
+      <div class="admin-stat-card">
+        <span class="stat-num" id="adm-stat-players">—</span>
+        <span class="stat-label">Registered Players</span>
+      </div>
+      <div class="admin-stat-card">
+        <span class="stat-num" id="adm-stat-completed">—</span>
+        <span class="stat-label">Matches Finalized</span>
+      </div>
+      <div class="admin-stat-card">
+        <span class="stat-num" id="adm-stat-pending">—</span>
+        <span class="stat-label">Matches Pending</span>
+      </div>
+    </div>
+
+    <!-- Enter final scores -->
+    <div class="admin-section">
+      <div class="admin-section-title">⚽ Enter Final Scores</div>
+      <p style="font-size:.8rem;color:var(--text-muted);margin-bottom:16px">
+        Enter the actual final score and click <strong>Calculate Results</strong> to award points to all
+        players who predicted this match. Team B is the underdog — a Team B win awards a +2 bonus to
+        players who predicted that outcome. You can re-finalize a match to correct a score.
+      </p>
+      <div id="admin-matches"><p class="loading-state">Loading…</p></div>
+    </div>
+
+    <!-- Scoring reference -->
+    <div class="admin-section">
+      <div class="admin-section-title">📋 Scoring Reference</div>
+      <div class="scoring-grid">
+        <div class="score-ref"><span class="pts" style="color:var(--blue)">+3</span><small>Correct result (W / D / L)</small></div>
+        <div class="score-ref"><span class="pts" style="color:#d97706">+5</span><small>Exact score prediction</small></div>
+        <div class="score-ref"><span class="pts" style="color:var(--text-muted)">8</span><small>Maximum pts per match</small></div>
+      </div>
+    </div>
+
+    <!-- Danger zone -->
+    <div class="admin-section danger">
+      <div class="admin-section-title">⚠ Danger Zone</div>
+      <p style="font-size:.85rem;color:var(--text-muted);margin-bottom:14px">
+        To fully reset all data (players, predictions, results), use the Supabase dashboard
+        and run: <code style="background:var(--bg);padding:2px 6px;border-radius:4px;font-size:.8rem">
+        truncate players, predictions, match_results restart identity cascade;</code>
+      </p>
+      <p style="font-size:.8rem;color:var(--text-muted)">
+        ⚠ This action is irreversible and will wipe the entire leaderboard and all player data.
+      </p>
+    </div>
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <img src="logo.jpeg" alt="246 Impex" class="footer-logo">
+        <div>
+          <div class="footer-brand-name">246 Impex Fantasy — Admin</div>
+          <div class="footer-brand-sub">Admin Panel · FIFA WC 2026</div>
+        </div>
+      </div>
+      <div class="footer-wc-badges">
+        <span class="footer-badge">⚽ 72 Matches to Finalize</span>
+        <span class="footer-badge">🏆 Max 8 pts/match</span>
+      </div>
+    </div>
+    <div class="footer-copyright">© 2026 246 Impex · Administrator Access Only</div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="data.js?v=20260611"></script>
+  <script src="script.js?v=20260611"></script>
+
+  <script>
+    // ── Admin Gate Logic ─────────────────────────────────────────
+    (function() {
+      const ADMIN_USER = '246Impex';
+      const ADMIN_PASS = '246Impex@#';
+      const SESSION_KEY = 'adm_auth_246';
+
+      const gate  = document.getElementById('admin-gate');
+      const form  = document.getElementById('gate-form');
+      const errEl = document.getElementById('gate-error');
+      const btn   = document.getElementById('gate-btn');
+
+      function isAuthenticated() {
+        return sessionStorage.getItem(SESSION_KEY) === '1';
+      }
+
+      function showGate() {
+        gate.classList.add('visible');
+        // Blur the main content behind the gate
+        document.querySelector('main').style.filter = 'blur(4px)';
+        document.querySelector('nav').style.filter  = 'blur(4px)';
+        document.querySelector('footer').style.filter = 'blur(4px)';
+      }
+
+      function hideGate() {
+        gate.classList.remove('visible');
+        document.querySelector('main').style.filter = '';
+        document.querySelector('nav').style.filter  = '';
+        document.querySelector('footer').style.filter = '';
+      }
+
+      form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const u = document.getElementById('gate-user').value.trim();
+        const p = document.getElementById('gate-pass').value;
+
+        if (u === ADMIN_USER && p === ADMIN_PASS) {
+          sessionStorage.setItem(SESSION_KEY, '1');
+          errEl.textContent = '';
+          hideGate();
+          // Admin page will init via the DOMContentLoaded in script.js
+        } else {
+          errEl.textContent = '❌ Incorrect username or password.';
+          document.getElementById('gate-pass').value = '';
+          document.getElementById('gate-pass').focus();
+        }
+      });
+
+      // Check on load
+      if (!isAuthenticated()) {
+        showGate();
+      }
+    })();
+  </script>
+</body>
+</html>
