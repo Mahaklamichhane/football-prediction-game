@@ -1,476 +1,461 @@
 // ============================================================
-// script.js — core game logic
+// script.js  —  UI logic · Auth · Scoring display
 // ============================================================
 
-// ── Scoring ──────────────────────────────────────────────────
-
-function getResult(a, b) {
-  return a > b ? "A" : b > a ? "B" : "D";
+// ── Loading spinner helper ────────────────────────────────────
+function spinnerHTML(msg = 'Connecting to 246 Impex Server…') {
+  return `<div class="server-loader">
+    <div class="spinner"></div>
+    <p>${msg}</p>
+  </div>`;
 }
 
-function calculatePoints(predicted, actual) {
-  const pA = +predicted.scoreA, pB = +predicted.scoreB;
-  const aA = +actual.scoreA,   aB = +actual.scoreB;
-  let points = 0;
-  const breakdown = [];
-
-  if (getResult(pA, pB) === getResult(aA, aB)) {
-    points += 3; breakdown.push({ label: "Correct result", pts: 3 });
-  }
-  if (pA === aA && pB === aB) {
-    points += 5; breakdown.push({ label: "Exact score", pts: 5 });
-  }
-  if (pA - pB === aA - aB) {
-    points += 2; breakdown.push({ label: "Correct goal diff", pts: 2 });
-  }
-  if (pA + pB === aA + aB) {
-    points += 2; breakdown.push({ label: "Correct total goals", pts: 2 });
-  }
-  if (isUnderdogWin(aA, aB) && isUnderdogWin(pA, pB)) {
-    points += 2; breakdown.push({ label: "Underdog win bonus", pts: 2 });
-  }
-
-  return { points, breakdown };
+// ── Session helpers ───────────────────────────────────────────
+function getSession()  {
+  const id   = localStorage.getItem('ffpl_pid');
+  const name = localStorage.getItem('ffpl_pname');
+  return id ? { id, name } : null;
+}
+function setSession(p) {
+  localStorage.setItem('ffpl_pid',   p.id);
+  localStorage.setItem('ffpl_pname', p.name);
+}
+function clearSession() {
+  localStorage.removeItem('ffpl_pid');
+  localStorage.removeItem('ffpl_pname');
 }
 
-// ── Prediction ───────────────────────────────────────────────
-
-function savePrediction(playerId, matchId, scoreA, scoreB) {
-  const matches = loadMatches();
-  const match = matches.find(m => m.matchId === matchId);
-  if (!match || match.isFinalized) return false;
-  if (!match.predictions) match.predictions = {};
-  match.predictions[playerId] = { scoreA: +scoreA, scoreB: +scoreB };
-  saveMatches(matches);
-  return true;
+// ── Auth overlay ──────────────────────────────────────────────
+function showAuthOverlay() {
+  const el = document.getElementById('auth-overlay');
+  if (el) el.classList.add('visible');
+}
+function hideAuthOverlay() {
+  const el = document.getElementById('auth-overlay');
+  if (el) el.classList.remove('visible');
 }
 
-// ── Results calculation ───────────────────────────────────────
+async function handleAuthSubmit(e) {
+  e.preventDefault();
+  const name = document.getElementById('auth-name').value.trim();
+  const bill = document.getElementById('auth-bill').value.trim();
+  const btn  = document.getElementById('auth-btn');
+  const err  = document.getElementById('auth-error');
 
-function finalizeMatch(matchId, scoreA, scoreB) {
-  const matches = loadMatches();
-  const match = matches.find(m => m.matchId === matchId);
-  if (!match) return false;
+  if (!name || !bill) { err.textContent = 'Please fill in both fields.'; return; }
+  err.textContent = '';
+  btn.disabled    = true;
+  btn.textContent = 'Verifying…';
 
-  match.actualScore  = { scoreA: +scoreA, scoreB: +scoreB };
-  match.isFinalized  = true;
-  saveMatches(matches);
+  try {
+    const player = await authPlayer(name, bill);
+    setSession(player);
+    hideAuthOverlay();
+    showToast(`Welcome, ${player.name}! 👋`, 'success');
+    initMatchesPage();
+  } catch (ex) {
+    console.error(ex);
+    err.textContent = ex.message || 'Could not verify. Please try again.';
+  } finally {
+    btn.disabled    = false;
+    btn.textContent = 'Verify & Continue';
+  }
+}
 
-  const players = loadPlayers();
-  const predictions = match.predictions || {};
+function handleLogout() {
+  clearSession();
+  showAuthOverlay();
+  initMatchesPage();
+}
 
-  players.forEach(player => {
-    const pred = predictions[player.id];
-    if (!pred) return;
+// ── Leaderboard page ──────────────────────────────────────────
+async function initLeaderboardPage() {
+  const body = document.getElementById('lb-body');
+  if (!body) return;
 
-    const { points, breakdown } = calculatePoints(pred, match.actualScore);
+  try {
+    const [players, stats] = await Promise.all([fetchLeaderboard(), fetchStats()]);
 
-    // Remove stale entry if match is re-finalized
-    const old = (player.predictionHistory || []).find(h => h.matchId === matchId);
-    if (old) {
-      player.totalPoints -= old.points;
-      player.predictionHistory = player.predictionHistory.filter(h => h.matchId !== matchId);
+    setEl('stat-players',   stats.players);
+    setEl('stat-completed', stats.completed);
+    setEl('stat-total',     stats.total);
+    setEl('stat-top',       stats.topScore);
+
+    if (!players.length) {
+      body.innerHTML = '<p class="empty-state">No players yet — be the first to <a href="matches.html">join</a>!</p>';
+      return;
     }
 
-    player.totalPoints = (player.totalPoints || 0) + points;
-    if (!player.predictionHistory) player.predictionHistory = [];
-    player.predictionHistory.push({ matchId, predicted: pred, actual: match.actualScore, points, breakdown });
-  });
-
-  savePlayers(players);
-  return true;
-}
-
-// ── Leaderboard ───────────────────────────────────────────────
-
-function getSortedLeaderboard() {
-  return loadPlayers().sort((a, b) => (b.totalPoints || 0) - (a.totalPoints || 0));
-}
-
-function updateLeaderboard() {
-  const container = document.getElementById("leaderboard-body");
-  if (!container) return;
-
-  const players = getSortedLeaderboard();
-  if (players.length === 0) {
-    container.innerHTML = '<p class="empty-state">No players registered yet. Join on the <a href="matches.html" style="color:var(--neon)">Predictions</a> page!</p>';
-    return;
+    const medals = ['🥇', '🥈', '🥉'];
+    const cls    = ['rank-gold', 'rank-silver', 'rank-bronze'];
+    body.innerHTML = players.map((p, i) => `
+      <div class="lb-row${i < 3 ? ' ' + cls[i] : ''}">
+        <span class="lb-rank">${i < 3 ? medals[i] : i + 1}</span>
+        <span class="lb-name">${esc(p.name)}</span>
+        <span class="lb-pts">${p.total_points || 0}<small> pts</small></span>
+      </div>`).join('');
+  } catch (ex) {
+    console.error(ex);
+    if (body) body.innerHTML = '<p class="error-state">Could not reach the 246 Impex server. Please check your connection and try again.</p>';
   }
-
-  const medals = ["🥇", "🥈", "🥉"];
-  const cls    = ["gold", "silver", "bronze"];
-
-  container.innerHTML = "";
-  players.forEach((p, i) => {
-    const rank = i + 1;
-    const row  = document.createElement("div");
-    row.className = "lb-row" + (rank <= 3 ? ` rank-${cls[i]}` : "");
-    row.innerHTML = `
-      <span class="lb-rank">${rank <= 3 ? medals[i] : rank}</span>
-      <span class="lb-name">${escHtml(p.name)}</span>
-      <span class="lb-pts">${p.totalPoints || 0} <small>pts</small></span>
-    `;
-    container.appendChild(row);
-  });
 }
 
 // ── Matches page ──────────────────────────────────────────────
+async function initMatchesPage() {
+  const session   = getSession();
+  const banner    = document.getElementById('player-banner');
+  const logoutBtn = document.getElementById('logout-btn');
 
-function renderMatchesByGroup(playerId) {
-  const container = document.getElementById("matches-list");
+  if (banner) {
+    if (session) {
+      const txt = banner.querySelector('#player-banner-text');
+      if (txt) txt.textContent = `Playing as: ${session.name}`;
+      else banner.childNodes[0].textContent = `Playing as: ${session.name}`;
+      banner.style.display = 'flex';
+    } else {
+      banner.style.display = 'none';
+    }
+  }
+  if (logoutBtn) logoutBtn.style.display = session ? 'inline-flex' : 'none';
+
+  const container = document.getElementById('matches-container');
   if (!container) return;
+  container.innerHTML = spinnerHTML('Loading FIFA WC 2026 matches…');
 
-  const allMatches = loadMatches();
-  container.innerHTML = "";
+  try {
+    const [results, myPreds] = await Promise.all([
+      fetchMatchResults(),
+      session ? fetchMyPredictions(session.id) : Promise.resolve({}),
+    ]);
 
-  // Build grouped view
-  for (const [grpKey, teams] of Object.entries(WC2026_GROUPS)) {
-    const grpMatches = allMatches.filter(m => m.group === grpKey);
-    if (!grpMatches.length) continue;
+    // Remember which tab was active before re-render
+    const prevActive = container.querySelector('.grp-tab.active')?.dataset.group || 'A';
+    container.innerHTML = '';
 
-    const section = document.createElement("div");
-    section.className = "group-section";
-    section.innerHTML = `
-      <div class="group-label">
-        <span class="group-tag">Group ${grpKey}</span>
-        <span class="group-teams">${teams.map(t => `${FLAG[t]||""} ${t}`).join(" · ")}</span>
-      </div>
-    `;
+    // ── Group Tabs bar ──────────────────────────────────────
+    const tabBar = document.createElement('div');
+    tabBar.className = 'group-tabs';
+    tabBar.innerHTML = Object.keys(WC2026_GROUPS).map(g =>
+      `<button class="grp-tab${g === prevActive ? ' active' : ''}" data-group="${g}">Group ${g}</button>`
+    ).join('');
+    container.appendChild(tabBar);
 
-    grpMatches.forEach(match => {
-      section.appendChild(buildMatchCard(match, playerId));
+    // ── Group sections (one per group, hidden unless active) ─
+    for (const [grp, teams] of Object.entries(WC2026_GROUPS)) {
+      const grpMatches = ALL_MATCHES.filter(m => m.group === grp);
+      const sec = document.createElement('div');
+      sec.className = 'group-section' + (grp === prevActive ? ' active' : '');
+      sec.dataset.group = grp;
+
+      // Info strip showing all 4 teams
+      sec.innerHTML = `
+        <div class="group-tab-info">
+          <span class="group-badge">Group ${grp}</span>
+          <span class="group-teams">${teams.map(t => `${FLAG[t] || ''} ${t}`).join(' &nbsp;·&nbsp; ')}</span>
+        </div>`;
+
+      const stack = document.createElement('div');
+      stack.className = 'matches-stack';
+      grpMatches.forEach(match => {
+        stack.appendChild(buildMatchCard(match, results[match.matchId] || null, myPreds[match.matchId] || null, session));
+      });
+      sec.appendChild(stack);
+      container.appendChild(sec);
+    }
+
+    // ── Tab click handler ────────────────────────────────────
+    tabBar.querySelectorAll('.grp-tab').forEach(btn => {
+      btn.addEventListener('click', () => {
+        tabBar.querySelectorAll('.grp-tab').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        container.querySelectorAll('.group-section').forEach(s => {
+          s.classList.toggle('active', s.dataset.group === btn.dataset.group);
+        });
+        btn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+      });
     });
 
-    container.appendChild(section);
-  }
-
-  // Admin-added matches without a WC group
-  const extraMatches = allMatches.filter(m => !m.group || !WC2026_GROUPS[m.group]);
-  if (extraMatches.length) {
-    const extra = document.createElement("div");
-    extra.className = "group-section";
-    extra.innerHTML = `<div class="group-label"><span class="group-tag">Custom Matches</span></div>`;
-    extraMatches.forEach(match => extra.appendChild(buildMatchCard(match, playerId)));
-    container.appendChild(extra);
+  } catch (ex) {
+    console.error(ex);
+    container.innerHTML = '<p class="error-state">Could not reach the 246 Impex server. Please check your connection and try again.</p>';
   }
 }
 
-function buildMatchCard(match, playerId) {
-  const userPred  = playerId ? (match.predictions || {})[playerId] : null;
-  const finalized = match.isFinalized;
-  const fA = FLAG[match.teamA] || "🏳️";
-  const fB = FLAG[match.teamB] || "🏳️";
+function buildMatchCard(match, result, pred, session) {
+  const locked    = isMatchLocked(match) || !!(result && result.is_finalized);
+  const finalized = !!(result && result.is_finalized);
+  const fA = FLAG[match.teamA] || '🏳';
+  const fB = FLAG[match.teamB] || '🏳';
 
-  const card = document.createElement("div");
-  card.className = "match-card" + (finalized ? " finalized" : "");
+  let bodyHtml = '';
 
-  const md = match.matchday ? `<span class="md-badge">MD${match.matchday}</span>` : "";
-  const dt = match.date ? `<span class="match-date">${formatDate(match.date)}</span>` : "";
-
-  card.innerHTML = `
-    <div class="match-meta">${md}${dt}</div>
-    <div class="match-header">
-      <span class="team team-a">${fA} ${escHtml(match.teamA)}</span>
-      <span class="vs-badge">VS</span>
-      <span class="team team-b">${escHtml(match.teamB)} ${fB}</span>
-    </div>
-    ${finalized
-      ? `<div class="match-result-badge">Final: ${match.actualScore.scoreA} – ${match.actualScore.scoreB}</div>`
-      : !playerId
-        ? `<p class="muted" style="text-align:center;font-size:.8rem;padding:8px 0">Select your name above to predict</p>`
-        : `<div class="prediction-form">
-            <div class="score-inputs">
-              <div class="score-group">
-                <label>${escHtml(match.teamA)}</label>
-                <input type="number" min="0" max="20" class="score-input" id="pred-a-${match.matchId}"
-                  value="${userPred !== null && userPred !== undefined ? userPred.scoreA : ""}" placeholder="0">
-              </div>
-              <span class="score-sep">–</span>
-              <div class="score-group">
-                <label>${escHtml(match.teamB)}</label>
-                <input type="number" min="0" max="20" class="score-input" id="pred-b-${match.matchId}"
-                  value="${userPred !== null && userPred !== undefined ? userPred.scoreB : ""}" placeholder="0">
-              </div>
-            </div>
-            ${userPred ? `<div class="saved-badge">✓ Saved: ${userPred.scoreA} – ${userPred.scoreB}</div>` : ""}
-            <button class="btn-predict" onclick="submitPrediction(${playerId},'${match.matchId}')">
-              ${userPred ? "Update" : "Submit"} Prediction
-            </button>
-          </div>`
+  if (finalized) {
+    bodyHtml += `<div class="final-badge">Final Score: ${result.score_a} – ${result.score_b}</div>`;
+    if (pred) {
+      const bd = Array.isArray(pred.breakdown)
+        ? pred.breakdown.map(b => `<span class="bd-item">+${b.pts} ${b.label}</span>`).join('')
+        : '';
+      bodyHtml += `<div class="my-pred finalized-pred">
+        Your prediction: <strong>${pred.score_a}–${pred.score_b}</strong>
+        &nbsp;·&nbsp; <span class="pts-tag">${pred.points_earned || 0} pts</span>
+        ${bd ? `<div class="bd-list">${bd}</div>` : ''}
+      </div>`;
+    } else if (session) {
+      bodyHtml += `<div class="my-pred no-pred-note">You did not predict this match.</div>`;
     }
-  `;
+  } else if (!session) {
+    bodyHtml = `<p class="lock-note">
+      <a href="#" onclick="showAuthOverlay();return false">Verify your identity</a> to submit a prediction.
+    </p>`;
+  } else if (locked) {
+    bodyHtml = `<div class="lock-note">🔒 Predictions locked — match has started</div>`;
+    if (pred) bodyHtml += `<div class="my-pred">Your saved prediction: <strong>${pred.score_a}–${pred.score_b}</strong></div>`;
+  } else {
+    // Open for prediction
+    bodyHtml = `
+      <div class="predict-form" id="form-${match.matchId}">
+        <div class="score-row">
+          <div class="score-col">
+            <span class="score-label">${esc(match.teamA)}</span>
+            <input type="number" min="0" max="20" class="score-in" id="pa-${match.matchId}"
+              value="${pred !== null && pred !== undefined ? pred.score_a : ''}" placeholder="0">
+          </div>
+          <span class="score-dash">–</span>
+          <div class="score-col">
+            <span class="score-label">${esc(match.teamB)}</span>
+            <input type="number" min="0" max="20" class="score-in" id="pb-${match.matchId}"
+              value="${pred !== null && pred !== undefined ? pred.score_b : ''}" placeholder="0">
+          </div>
+        </div>
+        ${pred ? `<div class="saved-pill">✓ Saved: ${pred.score_a}–${pred.score_b}</div>` : ''}
+        <button class="btn-save" onclick="handleSavePred('${match.matchId}',this)">
+          ${pred ? 'Update' : 'Submit'} Prediction
+        </button>
+      </div>`;
+  }
+
+  const card = document.createElement('div');
+  card.className = `match-card${locked ? ' locked' : ''}${finalized ? ' finalized' : ''}`;
+  card.innerHTML = `
+    <div class="match-meta">
+      <span class="md-chip">MD${match.matchday}</span>
+      <span class="match-dt">${fmtDatetime(match.kickoff)}</span>
+      ${locked && !finalized ? '<span class="lock-chip">🔒 Locked</span>' : ''}
+    </div>
+    <div class="match-teams">
+      <span class="team-a">${fA} ${esc(match.teamA)}</span>
+      <span class="vs-pill">VS</span>
+      <span class="team-b">${esc(match.teamB)} ${fB}</span>
+    </div>
+    ${bodyHtml}`;
   return card;
 }
 
-function submitPrediction(playerId, matchId) {
-  const a = document.getElementById(`pred-a-${matchId}`);
-  const b = document.getElementById(`pred-b-${matchId}`);
-  if (!a || !b || a.value === "" || b.value === "") {
-    showToast("Enter both scores first.", "error"); return;
+async function handleSavePred(matchId, btn) {
+  const session = getSession();
+  if (!session) { showAuthOverlay(); return; }
+
+  const a = document.getElementById(`pa-${matchId}`);
+  const b = document.getElementById(`pb-${matchId}`);
+  if (!a || !b || a.value === '' || b.value === '') {
+    showToast('Enter both scores first.', 'error'); return;
   }
-  if (savePrediction(playerId, matchId, a.value, b.value)) {
-    showToast("Prediction saved!", "success");
-    renderMatchesByGroup(playerId);
-  } else {
-    showToast("Match already finalized.", "error");
+
+  const orig     = btn.textContent;
+  btn.disabled   = true;
+  btn.textContent = 'Saving…';
+
+  try {
+    await upsertPrediction(session.id, matchId, +a.value, +b.value);
+    showToast('Prediction saved! ✓', 'success');
+    initMatchesPage();
+  } catch (ex) {
+    console.error(ex);
+    showToast('Save failed: ' + (ex.message || 'Try again.'), 'error');
+    btn.disabled    = false;
+    btn.textContent = orig;
   }
 }
 
 // ── Results page ──────────────────────────────────────────────
-
-function renderResults() {
-  const container = document.getElementById("results-list");
+async function initResultsPage() {
+  const container = document.getElementById('results-container');
   if (!container) return;
+  container.innerHTML = spinnerHTML('Loading match results…');
 
-  const matches = loadMatches().filter(m => m.isFinalized);
-  const players = loadPlayers();
+  try {
+    const data    = await fetchResultsData();
+    const session = getSession();
 
-  if (!matches.length) {
-    container.innerHTML = '<p class="empty-state">No completed matches yet — check back after the admin finalizes results.</p>';
-    return;
-  }
-
-  container.innerHTML = "";
-
-  matches.forEach(match => {
-    const fA = FLAG[match.teamA] || "🏳️";
-    const fB = FLAG[match.teamB] || "🏳️";
-    const section = document.createElement("div");
-    section.className = "result-section";
-
-    const rows = players.map(player => {
-      const hist = (player.predictionHistory || []).find(h => h.matchId === match.matchId);
-      if (!hist) return `<div class="result-row no-pred">
-        <span class="res-name">${escHtml(player.name)}</span>
-        <span class="res-pred muted">No prediction</span>
-        <span class="res-pts muted">0</span>
-        <span class="res-bd muted">—</span>
-      </div>`;
-      const bd = hist.breakdown.map(b => `${b.label} (+${b.pts})`).join(", ");
-      return `<div class="result-row">
-        <span class="res-name">${escHtml(player.name)}</span>
-        <span class="res-pred">${hist.predicted.scoreA}–${hist.predicted.scoreB}</span>
-        <span class="res-pts pts-flash">${hist.points} pts</span>
-        <span class="res-bd">${bd}</span>
-      </div>`;
-    }).join("");
-
-    section.innerHTML = `
-      <div class="result-match-header">
-        <span class="team-name">${fA} ${escHtml(match.teamA)}</span>
-        <span class="actual-score">${match.actualScore.scoreA} – ${match.actualScore.scoreB}</span>
-        <span class="team-name">${escHtml(match.teamB)} ${fB}</span>
-      </div>
-      <div class="result-meta" style="text-align:center;padding:6px 16px;font-size:.75rem;color:var(--text-muted);border-bottom:1px solid var(--border)">
-        ${match.group ? `Group ${match.group} · ` : ""}${match.date ? formatDate(match.date) : ""}
-      </div>
-      <div class="result-table-head"><span>Player</span><span>Prediction</span><span>Points</span><span>Breakdown</span></div>
-      <div class="result-rows">${rows || '<p class="empty-state" style="padding:20px">No predictions were submitted for this match.</p>'}</div>
-    `;
-    container.appendChild(section);
-  });
-}
-
-// ── Admin panel ───────────────────────────────────────────────
-
-function adminRenderMatchList() {
-  const container = document.getElementById("admin-matches");
-  if (!container) return;
-
-  const matches  = loadMatches();
-  container.innerHTML = "";
-
-  // Group by WC group, then extras
-  const grouped = {};
-  const extras  = [];
-  matches.forEach(m => {
-    if (m.group && WC2026_GROUPS[m.group]) {
-      if (!grouped[m.group]) grouped[m.group] = [];
-      grouped[m.group].push(m);
-    } else {
-      extras.push(m);
+    if (!data.length) {
+      container.innerHTML = '<p class="empty-state">No completed matches yet — check back after kick-off!</p>';
+      return;
     }
-  });
 
-  const renderGroupBlock = (label, list) => {
-    const block = document.createElement("div");
-    block.className = "admin-group-block";
-    block.innerHTML = `<div class="admin-group-label">${label}</div>`;
-    list.forEach(match => {
-      const fA = FLAG[match.teamA] || "🏳️";
-      const fB = FLAG[match.teamB] || "🏳️";
-      const card = document.createElement("div");
-      card.className = "admin-match-card" + (match.isFinalized ? " finalized" : "");
-      card.innerHTML = `
-        <div class="admin-match-title">
-          ${fA} ${escHtml(match.teamA)}
-          <span class="vs-badge">VS</span>
-          ${escHtml(match.teamB)} ${fB}
-          ${match.date ? `<span class="match-date-tag">${formatDate(match.date)}</span>` : ""}
-          ${match.isFinalized ? `<span class="finalized-tag">Final: ${match.actualScore.scoreA}–${match.actualScore.scoreB}</span>` : ""}
+    container.innerHTML = '';
+    data.forEach(({ result, match, predictions, players }) => {
+      if (!match) return;
+      const fA = FLAG[match.teamA] || '🏳';
+      const fB = FLAG[match.teamB] || '🏳';
+
+      const sorted = [...predictions].sort((a, b) => (b.points_earned || 0) - (a.points_earned || 0));
+
+      const rows = sorted.map(pred => {
+        const player = players.find(p => p.id === pred.player_id);
+        if (!player) return '';
+        const isMe = session && session.id === pred.player_id;
+        const bd   = Array.isArray(pred.breakdown)
+          ? pred.breakdown.map(b => `${b.label} (+${b.pts})`).join(', ')
+          : '';
+        return `<div class="res-row${isMe ? ' my-row' : ''}">
+          <span class="rr-name">${esc(player.name)}${isMe ? ' <span class="you-tag">You</span>' : ''}</span>
+          <span class="rr-pred">${pred.score_a}–${pred.score_b}</span>
+          <span class="rr-pts">${pred.points_earned || 0} pts</span>
+          <span class="rr-bd">${bd || '—'}</span>
+        </div>`;
+      }).join('');
+
+      const sec = document.createElement('div');
+      sec.className = 'result-section';
+      sec.innerHTML = `
+        <div class="result-header">
+          <div class="rh-teams">
+            <span>${fA} ${esc(match.teamA)}</span>
+            <span class="rh-score">${result.score_a} – ${result.score_b}</span>
+            <span>${esc(match.teamB)} ${fB}</span>
+          </div>
+          <div class="rh-meta">Group ${match.group} · MD${match.matchday} · ${fmtDate(match.kickoff)}</div>
         </div>
-        ${!match.isFinalized ? `<div class="admin-score-row">
-          <input type="number" min="0" max="20" id="adm-a-${match.matchId}" placeholder="${escHtml(match.teamA)}" class="admin-input">
-          <span class="score-sep">–</span>
-          <input type="number" min="0" max="20" id="adm-b-${match.matchId}" placeholder="${escHtml(match.teamB)}" class="admin-input">
-          <button class="btn-finalize" onclick="adminFinalize('${match.matchId}')">Calculate Results</button>
-        </div>` : ""}
-      `;
-      block.appendChild(card);
+        <div class="res-table-head"><span>Player</span><span>Prediction</span><span>Points</span><span>Breakdown</span></div>
+        <div class="res-rows">${rows || '<p class="empty-state-sm">No predictions were submitted for this match.</p>'}</div>`;
+      container.appendChild(sec);
     });
-    container.appendChild(block);
-  };
-
-  for (const [grp, list] of Object.entries(grouped)) {
-    renderGroupBlock(`Group ${grp}`, list);
+  } catch (ex) {
+    console.error(ex);
+    container.innerHTML = '<p class="error-state">Could not reach the 246 Impex server. Please check your connection.</p>';
   }
-  if (extras.length) renderGroupBlock("Custom Matches", extras);
 }
 
-function adminFinalize(matchId) {
-  const a = document.getElementById(`adm-a-${matchId}`);
-  const b = document.getElementById(`adm-b-${matchId}`);
-  if (!a || !b || a.value === "" || b.value === "") {
-    showToast("Enter both scores first.", "error"); return;
+// ── Admin page ────────────────────────────────────────────────
+async function initAdminPage() {
+  const container = document.getElementById('admin-matches');
+  if (!container) return;
+  container.innerHTML = spinnerHTML('Loading match data…');
+
+  try {
+    const results = await fetchMatchResults();
+    container.innerHTML = '';
+
+    for (const [grp, teams] of Object.entries(WC2026_GROUPS)) {
+      const block = document.createElement('div');
+      block.className = 'admin-group-block';
+      block.innerHTML = `<div class="admin-grp-label">
+        Group ${grp} — ${teams.map(t => `${FLAG[t] || ''} ${t}`).join(', ')}
+      </div>`;
+
+      ALL_MATCHES.filter(m => m.group === grp).forEach(match => {
+        const result = results[match.matchId];
+        const done   = result && result.is_finalized;
+        const fA = FLAG[match.teamA] || '🏳';
+        const fB = FLAG[match.teamB] || '🏳';
+
+        const card = document.createElement('div');
+        card.className = `adm-card${done ? ' done' : ''}`;
+        card.id = `adm-card-${match.matchId}`;
+        card.innerHTML = `
+          <div class="adm-card-top">
+            <div class="adm-teams">${fA} ${esc(match.teamA)} <span class="vs-sm">vs</span> ${esc(match.teamB)} ${fB}</div>
+            <div class="adm-meta">MD${match.matchday} · ${fmtDatetime(match.kickoff)}</div>
+            ${done ? `<span class="done-badge">✓ Final: ${result.score_a}–${result.score_b}</span>` : ''}
+          </div>
+          ${!done ? `<div class="adm-form">
+            <input type="number" min="0" max="20" id="aa-${match.matchId}" class="adm-in" placeholder="${esc(match.teamA)} goals">
+            <span class="adm-dash">–</span>
+            <input type="number" min="0" max="20" id="ab-${match.matchId}" class="adm-in" placeholder="${esc(match.teamB)} goals">
+            <button class="btn-calc" onclick="handleAdminFinalize('${match.matchId}',this)">Calculate Results</button>
+          </div>` : ''}`;
+        block.appendChild(card);
+      });
+      container.appendChild(block);
+    }
+
+    // Stats bar update
+    const stats = await fetchStats();
+    setEl('adm-stat-players',   stats.players);
+    setEl('adm-stat-completed', stats.completed);
+    setEl('adm-stat-pending',   stats.total - stats.completed);
+  } catch (ex) {
+    console.error(ex);
+    container.innerHTML = '<p class="error-state">Could not reach the 246 Impex server. Please check your connection.</p>';
   }
-  finalizeMatch(matchId, a.value, b.value);
-  showToast("Match finalized — points calculated!", "success");
-  adminRenderMatchList();
 }
 
-function adminAddMatch(e) {
-  e.preventDefault();
-  const tA = document.getElementById("new-team-a").value.trim();
-  const tB = document.getElementById("new-team-b").value.trim();
-  const dt = document.getElementById("new-match-date").value;
-  if (!tA || !tB) { showToast("Enter both team names.", "error"); return; }
-  const matches = loadMatches();
-  matches.push(makeMatch("m" + Date.now(), null, null, tA, tB, dt || null));
-  saveMatches(matches);
-  showToast("Match added!", "success");
-  document.getElementById("add-match-form").reset();
-  adminRenderMatchList();
-}
-
-function adminResetData() {
-  if (!confirm("Reset ALL data? This cannot be undone.")) return;
-  localStorage.removeItem("ffpl_players");
-  localStorage.removeItem("ffpl_matches");
-  showToast("Data reset.", "success");
-  setTimeout(() => location.reload(), 800);
-}
-
-// ── Player registration ───────────────────────────────────────
-
-function initRegistration() {
-  const form = document.getElementById("register-form");
-  if (!form) return;
-  form.addEventListener("submit", e => {
-    e.preventDefault();
-    const nameInput = document.getElementById("reg-name");
-    const name = nameInput.value.trim();
-    if (!name) { showToast("Enter your name.", "error"); return; }
-    const player = registerPlayer(name);
-    if (!player) { showToast("Could not register.", "error"); return; }
-    localStorage.setItem("ffpl_active_player", player.id);
-    nameInput.value = "";
-    refreshActivePlayer();
-    showToast(`Welcome, ${player.name}!`, "success");
-  });
-}
-
-function refreshActivePlayer() {
-  const savedId  = parseInt(localStorage.getItem("ffpl_active_player"), 10);
-  const selector = document.getElementById("player-select");
-  const banner   = document.getElementById("active-player-banner");
-
-  // Rebuild selector
-  if (selector) {
-    const players = loadPlayers();
-    selector.innerHTML = '<option value="">— Select your name —</option>';
-    players.forEach(p => {
-      const opt = document.createElement("option");
-      opt.value = p.id;
-      opt.textContent = p.name;
-      if (p.id === savedId) opt.selected = true;
-      selector.appendChild(opt);
-    });
-    selector.onchange = () => {
-      localStorage.setItem("ffpl_active_player", selector.value);
-      renderMatchesByGroup(parseInt(selector.value, 10) || null);
-      updateActiveBanner(selector.value ? loadPlayers().find(p => p.id === +selector.value) : null);
-    };
+async function handleAdminFinalize(matchId, btn) {
+  const a = document.getElementById(`aa-${matchId}`);
+  const b = document.getElementById(`ab-${matchId}`);
+  if (!a || !b || a.value === '' || b.value === '') {
+    showToast('Enter both scores first.', 'error'); return;
   }
+  const orig    = btn.textContent;
+  btn.disabled  = true;
+  btn.textContent = 'Calculating…';
 
-  const activePlayer = savedId ? loadPlayers().find(p => p.id === savedId) : null;
-  updateActiveBanner(activePlayer);
-  renderMatchesByGroup(activePlayer ? activePlayer.id : null);
-}
-
-function updateActiveBanner(player) {
-  const banner = document.getElementById("active-player-banner");
-  if (!banner) return;
-  if (player) {
-    banner.textContent = `Playing as: ${player.name}`;
-    banner.style.display = "block";
-  } else {
-    banner.style.display = "none";
+  try {
+    const { updated } = await finalizeMatchResult(matchId, +a.value, +b.value);
+    showToast(`✓ Finalized! Points updated for ${updated} player(s).`, 'success');
+    initAdminPage();
+  } catch (ex) {
+    console.error(ex);
+    showToast('Error: ' + (ex.message || 'Could not finalize.'), 'error');
+    btn.disabled    = false;
+    btn.textContent = orig;
   }
 }
 
 // ── Toast ─────────────────────────────────────────────────────
-
-function showToast(msg, type = "info") {
-  let t = document.getElementById("toast");
-  if (!t) { t = document.createElement("div"); t.id = "toast"; document.body.appendChild(t); }
+function showToast(msg, type = 'info') {
+  let t = document.getElementById('toast');
+  if (!t) { t = document.createElement('div'); t.id = 'toast'; document.body.appendChild(t); }
   t.textContent = msg;
   t.className   = `toast show ${type}`;
-  clearTimeout(t._timer);
-  t._timer = setTimeout(() => t.classList.remove("show"), 3000);
+  clearTimeout(t._t);
+  t._t = setTimeout(() => t.classList.remove('show'), 3500);
 }
 
-// ── Utility ───────────────────────────────────────────────────
-
-function escHtml(str) {
-  return String(str)
-    .replace(/&/g, "&amp;").replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+// ── Utils ─────────────────────────────────────────────────────
+function esc(s) {
+  return String(s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
+function setEl(id, val) { const el = document.getElementById(id); if (el) el.textContent = val; }
 
-// ── Page init ─────────────────────────────────────────────────
-
-document.addEventListener("DOMContentLoaded", () => {
+// ── Page router ───────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
   const page = document.body.dataset.page;
 
-  if (page === "leaderboard") {
-    updateLeaderboard();
-    // Stat cards
-    const players  = loadPlayers();
-    const matches  = loadMatches();
-    const done     = matches.filter(m => m.isFinalized).length;
-    const topPts   = players.length ? Math.max(...players.map(p => p.totalPoints || 0)) : 0;
-    const el = id => document.getElementById(id);
-    if (el("stat-players"))  el("stat-players").textContent  = players.length || "0";
-    if (el("stat-matches"))  el("stat-matches").textContent  = done;
-    if (el("stat-top"))      el("stat-top").textContent      = topPts;
-    if (el("stat-total-m"))  el("stat-total-m").textContent  = matches.length;
-    setInterval(updateLeaderboard, 5000);
+  if (page === 'leaderboard') {
+    initLeaderboardPage();
+    setInterval(initLeaderboardPage, 30_000);
   }
 
-  if (page === "matches") {
-    initRegistration();
-    refreshActivePlayer();
+  if (page === 'matches') {
+    const form = document.getElementById('auth-form');
+    if (form) form.addEventListener('submit', handleAuthSubmit);
+
+    const logoutBtn = document.getElementById('logout-btn');
+    if (logoutBtn) logoutBtn.addEventListener('click', handleLogout);
+
+    if (!getSession()) showAuthOverlay();
+    initMatchesPage();
   }
 
-  if (page === "results") {
-    renderResults();
+  if (page === 'results') {
+    initResultsPage();
   }
 
-  if (page === "admin") {
-    adminRenderMatchList();
-    const form = document.getElementById("add-match-form");
-    if (form) form.addEventListener("submit", adminAddMatch);
-    const rb = document.getElementById("btn-reset");
-    if (rb) rb.addEventListener("click", adminResetData);
+  if (page === 'admin') {
+    initAdminPage();
   }
 });
+
