@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="color-scheme" content="light only">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Leaderboard — 246 Impex Fantasy League · FIFA WC 2026</title>
+  <link rel="stylesheet" href="style.css?v=20260628">
+</head>
+<body data-page="leaderboard">
+
+  <!-- ══════════════════════════════════════════════════════════
+       PRIZE HUB VOUCHER SPLASH — once per session
+  ══════════════════════════════════════════════════════════ -->
+  <div id="prize-splash" style="display:none" aria-modal="true" role="dialog" aria-label="Prize Hub">
+    <div class="splash-backdrop"></div>
+
+    <div class="voucher">
+
+      <!-- Close X -->
+      <button id="splash-close-btn" class="voucher-close" aria-label="Close">&times;</button>
+
+      <!-- ── TOP STUB: Red header ─────────────────────────── -->
+      <div class="voucher-header">
+        <div class="voucher-logo-row">
+          <img src="logo.jpeg" alt="246 Impex" class="voucher-logo" onerror="this.style.display='none'">
+          <div>
+            <div class="voucher-brand">246 Impex Fantasy</div>
+            <div class="voucher-brand-sub">⚽ FIFA World Cup 2026</div>
+          </div>
+        </div>
+        <div class="voucher-headline">🏆 WIN REAL PRIZES</div>
+        <div class="voucher-subline">Predict match scores · Climb the leaderboard · Take home the prize</div>
+      </div>
+
+      <!-- ── PERFORATION ──────────────────────────────────── -->
+      <div class="voucher-perf">
+        <div class="voucher-perf-circle voucher-perf-circle--left"></div>
+        <div class="voucher-perf-line"></div>
+        <div class="voucher-perf-circle voucher-perf-circle--right"></div>
+      </div>
+
+      <!-- ── BODY: White section ─────────────────────────── -->
+      <div class="voucher-body">
+
+        <!-- Prize row -->
+        <div class="voucher-prizes-title">🎁 PRIZES UP FOR GRABS</div>
+        <div class="voucher-prizes">
+
+          <a class="voucher-prize" href="https://246impex.com.np/product/promate-1.53%22-round-screen-fitness-tracker-smartwatch-with-bt-calling" target="_blank" rel="noopener">
+            <div class="voucher-prize-rank gold">🥇 1<sup>st</sup></div>
+            <div class="voucher-prize-img-wrap">
+              <img src="prize-smartwatch.jpg" alt="Promate XWatch-R19" onerror="this.style.display='none'">
+            </div>
+            <div class="voucher-prize-name">Promate XWatch-R19</div>
+            <div class="voucher-prize-spec">1.53″ Smart Watch · BT Calling</div>
+          </a>
+
+          <div class="voucher-prize-divider"></div>
+
+          <a class="voucher-prize" href="https://246impex.com.np/product/promate-10000mah-35w-power-bank-with-built-in-usb-c-fast-charging" target="_blank" rel="noopener">
+            <div class="voucher-prize-rank silver">🥈 2<sup>nd</sup></div>
+            <div class="voucher-prize-img-wrap">
+              <img src="prize-powerbank.jpg" alt="Promate PowerPack-Pro" onerror="this.style.display='none'">
+            </div>
+            <div class="voucher-prize-name">Promate PowerPack-Pro</div>
+            <div class="voucher-prize-spec">10,000mAh · 35W Fast Charge</div>
+          </a>
+
+        </div>
+
+        <!-- ── PERFORATION 2 ─────────────────────────────── -->
+        <div class="voucher-perf voucher-perf--white">
+          <div class="voucher-perf-circle voucher-perf-circle--left wh"></div>
+          <div class="voucher-perf-line wh"></div>
+          <div class="voucher-perf-circle voucher-perf-circle--right wh"></div>
+        </div>
+
+        <!-- Game structure -->
+        <div class="voucher-game">
+          <div class="voucher-game-col soon-col" style="opacity:.65">
+            <div class="vcol-tag" style="color:#9ca3af">✓ PART 1 · DONE</div>
+            <div class="vcol-title">⚽ Group Stage</div>
+            <div class="vcol-desc">72 matches · Jun 11–27<br>Part 1 prizes awarded!</div>
+          </div>
+          <div class="voucher-game-arrow">→</div>
+          <div class="voucher-game-col active-col">
+            <div class="vcol-tag live">🔥 PART 2 · LIVE NOW</div>
+            <div class="vcol-title">🏆 Knockouts</div>
+            <div class="vcol-desc">Round of 32 → Final<br>Jun 28 – Jul 19 · Top 2 win!</div>
+          </div>
+        </div>
+
+        <div class="voucher-notice">
+          🎉 <strong>Group Stage complete!</strong> Part 1 prizes awarded. Everyone starts fresh — predict the Knockouts and win Part 2 prizes!
+        </div>
+
+      </div>
+
+      <!-- ── BOTTOM STUB: Red footer ─────────────────────── -->
+      <div class="voucher-footer">
+        <span>246impex.com.np</span>
+        <span class="vf-sep">·</span>
+        <span>WhatsApp: 9843737788</span>
+        <span class="vf-sep">·</span>
+        <span>Tap outside to close</span>
+      </div>
+
+    </div>
+  </div>
+
+  <nav>
+    <div class="nav-inner">
+      <a href="index.html" class="nav-brand">
+        <img src="logo.jpeg" alt="246 Impex" class="nav-logo-img">
+        <div>
+          <span class="nav-brand-text">246 Impex Fantasy</span>
+          <span class="nav-brand-sub">⚽ FIFA World Cup 2026</span>
+        </div>
+      </a>
+      <ul class="nav-links">
+        <li><a href="index.html" class="active">Leaderboard</a></li>
+        <li><a href="matches.html">Predictions</a></li>
+        <li><a href="results.html">Results</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <main>
+    <div class="page-hero">
+      <div class="hero-text">
+        <div class="hero-eyebrow">🏆 FIFA World Cup 2026 · Knockout Stage</div>
+        <h1>Global Leaderboard</h1>
+        <p>Predict. Score. Dominate. · 32 Teams · 32 Matches</p>
+      </div>
+      <div class="live-badge">
+        <span class="live-dot"></span>
+        Live Rankings
+      </div>
+      <!-- Company logo inside hero -->
+      <div class="hero-logo-wrap">
+        <img src="logo.jpeg" alt="246 Impex" class="hero-logo-img">
+        <span class="hero-logo-tagline">246 Impex</span>
+      </div>
+    </div>
+
+    <!-- Nations scrolling ticker -->
+    <div class="nations-ticker">
+      <div class="ticker-track">
+        <!-- Set 1 — real WC2026 48 nations -->
+        <span class="ticker-item">🇲🇽 Mexico</span><span class="ticker-sep">·</span>
+        <span class="ticker-item">🇿🇦 South Africa</span><span class="ticker-sep">·</span>
+        <span class="ticker-item">🇰🇷 South Korea</span><span class="ticker-sep">·</span>
+        <span class="ticker-item">🇨🇿 Czech Republic</span><span class="ticker-sep">·</span>
+        <span class="ticker-item">🇨🇦 Canada</span><span class="ticker-sep">·</span>
+        <span class="ticker-item">🇧🇦 Bosnia &amp; Herzegovina</span><span class="ticker-sep">·</span>
+        <span class="ticker-item">🇶🇦 Qatar</span><span class="ticker-sep">·</span>
+        <span class="ticker-item">🇨🇭 Switzerland</span><span class="ticker-sep">·</span>
+        <span class="ticker-item">🇧🇷 Brazil</span><span class="ticker-sep">·</span>
+        <span class="ticker-item">🇲🇦 Morocco</span><span class="ticker-sep">·</span>
+        <span class="ticker-item">🇭🇹 Haiti</span><span class="ticker-sep">·</span>
+        <span class="ticker-item">🏴󠁧󠁢󠁳󠁣󠁴󠁿 Scotland</span><span class="ticker-sep">·</span>
+        <span class="ticker-item">🇺🇸 USA</span><span class="ticker-sep">·</span>
+        <span class="ticker-item">🇵🇾 Paraguay</span><span class="ticker-sep">·</span>
+        <span class="ticker-item">🇦🇺 Australia</span><span class="ticker-sep">·</span>
+        <span class="ticker-item">🇹🇷 Turkey</span><span class="ticker-sep">·</span>
+        <span class="ticker-item">🇩🇪 Germany</span><span class="ticker-sep">·</span>
+        <span class="ticker-item">🇨🇼 Curacao</span><span class="ticker-sep">·</span>
+        <span class="ticker-item">🇨🇮 Ivory Coast</span><span class="ticker-sep">·</span>
+        <span class="ticker-item">🇪🇨 Ecuador</span><span class="ticker-sep">·</span>
+        <span class="ticker-item">🇳🇱 Netherlands</span><span class="ticker-sep">·</span>
+        <span class="ticker-item">🇯🇵 Japan</span><span class="ticker-sep">·</span>
+        <span class="ticker-item">🇸🇪 Sweden</span><span class="ticker-sep">·</span>
+        <span class="ticker-item">🇹🇳 Tunisia</span><span class="ticker-sep">·</span>
+        <span class="ticker-item">🇧🇪 Belgium</span><span class="ticker-sep">·</span>
+        <span class="ticker-item">🇪🇬 Egypt</span><span class="ticker-sep">·</span>
+        <span class="ticker-item">🇮🇷 Iran</span><span class="ticker-sep">·</span>
+        <span class="ticker-item">🇳🇿 New Zealand</span><span class="ticker-sep">·</span>
+        <span class="ticker-item">🇪🇸 Spain</span><span class="ticker-sep">·</span>
+        <span class="ticker-item">🇨🇻 Cape Verde</span><span class="ticker-sep">·</span>
+        <span class="ticker-item">🇸🇦 Saudi Arabia</span><span class="ticker-sep">·</span>
+        <span class="ticker-item">🇺🇾 Uruguay</span><span class="ticker-sep">·</span>
+        <span class="ticker-item">🇫🇷 France</span><span class="ticker-sep">·</span>
+        <span class="ticker-item">🇸🇳 Senegal</span><span class="ticker-sep">·</span>
+        <span class="ticker-item">🇮🇶 Iraq</span><span class="ticker-sep">·</span>
+        <span class="ticker-item">🇳🇴 Norway</span><span class="ticker-sep">·</span>
+        <span class="ticker-item">🇦🇷 Argentina</span><span class="ticker-sep">·</span>
+        <span class="ticker-item">🇩🇿 Algeria</span><span class="ticker-sep">·</span>
+        <span class="ticker-item">🇦🇹 Austria</span><span class="ticker-sep">·</span>
+        <span class="ticker-item">🇯🇴 Jordan</span><span class="ticker-sep">·</span>
+        <span class="ticker-item">🇵🇹 Portugal</span><span class="ticker-sep">·</span>
+        <span class="ticker-item">🇨🇩 DR Congo</span><span class="ticker-sep">·</span>
+        <span class="ticker-item">🇺🇿 Uzbekistan</span><span class="ticker-sep">·</span>
+        <span class="ticker-item">🇨🇴 Colombia</span><span class="ticker-sep">·</span>
+        <span class="ticker-item">🏴󠁧󠁢󠁥󠁮󠁧󠁿 England</span><span class="ticker-sep">·</span>
+        <span class="ticker-item">🇭🇷 Croatia</span><span class="ticker-sep">·</span>
+        <span class="ticker-item">🇬🇭 Ghana</span><span class="ticker-sep">·</span>
+        <span class="ticker-item">🇵🇦 Panama</span><span class="ticker-sep">·</span>
+        <!-- Set 2 (duplicate for seamless loop) -->
+        <span class="ticker-item">🇲🇽 Mexico</span><span class="ticker-sep">·</span>
+        <span class="ticker-item">🇿🇦 South Africa</span><span class="ticker-sep">·</span>
+        <span class="ticker-item">🇰🇷 South Korea</span><span class="ticker-sep">·</span>
+        <span class="ticker-item">🇨🇿 Czech Republic</span><span class="ticker-sep">·</span>
+        <span class="ticker-item">🇨🇦 Canada</span><span class="ticker-sep">·</span>
+        <span class="ticker-item">🇧🇦 Bosnia &amp; Herzegovina</span><span class="ticker-sep">·</span>
+        <span class="ticker-item">🇶🇦 Qatar</span><span class="ticker-sep">·</span>
+        <span class="ticker-item">🇨🇭 Switzerland</span><span class="ticker-sep">·</span>
+        <span class="ticker-item">🇧🇷 Brazil</span><span class="ticker-sep">·</span>
+        <span class="ticker-item">🇲🇦 Morocco</span><span class="ticker-sep">·</span>
+        <span class="ticker-item">🇭🇹 Haiti</span><span class="ticker-sep">·</span>
+        <span class="ticker-item">🏴󠁧󠁢󠁳󠁣󠁴󠁿 Scotland</span><span class="ticker-sep">·</span>
+        <span class="ticker-item">🇺🇸 USA</span><span class="ticker-sep">·</span>
+        <span class="ticker-item">🇵🇾 Paraguay</span><span class="ticker-sep">·</span>
+        <span class="ticker-item">🇦🇺 Australia</span><span class="ticker-sep">·</span>
+        <span class="ticker-item">🇹🇷 Turkey</span><span class="ticker-sep">·</span>
+        <span class="ticker-item">🇩🇪 Germany</span><span class="ticker-sep">·</span>
+        <span class="ticker-item">🇨🇼 Curacao</span><span class="ticker-sep">·</span>
+        <span class="ticker-item">🇨🇮 Ivory Coast</span><span class="ticker-sep">·</span>
+        <span class="ticker-item">🇪🇨 Ecuador</span><span class="ticker-sep">·</span>
+        <span class="ticker-item">🇳🇱 Netherlands</span><span class="ticker-sep">·</span>
+        <span class="ticker-item">🇯🇵 Japan</span><span class="ticker-sep">·</span>
+        <span class="ticker-item">🇸🇪 Sweden</span><span class="ticker-sep">·</span>
+        <span class="ticker-item">🇹🇳 Tunisia</span><span class="ticker-sep">·</span>
+        <span class="ticker-item">🇧🇪 Belgium</span><span class="ticker-sep">·</span>
+        <span class="ticker-item">🇪🇬 Egypt</span><span class="ticker-sep">·</span>
+        <span class="ticker-item">🇮🇷 Iran</span><span class="ticker-sep">·</span>
+        <span class="ticker-item">🇳🇿 New Zealand</span><span class="ticker-sep">·</span>
+        <span class="ticker-item">🇪🇸 Spain</span><span class="ticker-sep">·</span>
+        <span class="ticker-item">🇨🇻 Cape Verde</span><span class="ticker-sep">·</span>
+        <span class="ticker-item">🇸🇦 Saudi Arabia</span><span class="ticker-sep">·</span>
+        <span class="ticker-item">🇺🇾 Uruguay</span><span class="ticker-sep">·</span>
+        <span class="ticker-item">🇫🇷 France</span><span class="ticker-sep">·</span>
+        <span class="ticker-item">🇸🇳 Senegal</span><span class="ticker-sep">·</span>
+        <span class="ticker-item">🇮🇶 Iraq</span><span class="ticker-sep">·</span>
+        <span class="ticker-item">🇳🇴 Norway</span><span class="ticker-sep">·</span>
+        <span class="ticker-item">🇦🇷 Argentina</span><span class="ticker-sep">·</span>
+        <span class="ticker-item">🇩🇿 Algeria</span><span class="ticker-sep">·</span>
+        <span class="ticker-item">🇦🇹 Austria</span><span class="ticker-sep">·</span>
+        <span class="ticker-item">🇯🇴 Jordan</span><span class="ticker-sep">·</span>
+        <span class="ticker-item">🇵🇹 Portugal</span><span class="ticker-sep">·</span>
+        <span class="ticker-item">🇨🇩 DR Congo</span><span class="ticker-sep">·</span>
+        <span class="ticker-item">🇺🇿 Uzbekistan</span><span class="ticker-sep">·</span>
+        <span class="ticker-item">🇨🇴 Colombia</span><span class="ticker-sep">·</span>
+        <span class="ticker-item">🏴󠁧󠁢󠁥󠁮󠁧󠁿 England</span><span class="ticker-sep">·</span>
+        <span class="ticker-item">🇭🇷 Croatia</span><span class="ticker-sep">·</span>
+        <span class="ticker-item">🇬🇭 Ghana</span><span class="ticker-sep">·</span>
+        <span class="ticker-item">🇵🇦 Panama</span><span class="ticker-sep">·</span>
+      </div>
+    </div>
+
+    <!-- Stats bar with icons -->
+    <div class="stats-bar">
+      <div class="stat-card">
+        <div class="stat-icon">
+          <svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        </div>
+        <span class="stat-num" id="stat-completed">—</span>
+        <span class="stat-label">Completed</span>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/><path d="M2 12h20"/></svg>
+        </div>
+        <span class="stat-num" id="stat-total">72</span>
+        <span class="stat-label">Total Matches</span>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">
+          <svg viewBox="0 0 24 24"><polyline points="8 21 12 21 16 21"/><line x1="12" y1="17" x2="12" y2="21"/><path d="M7 4H4a2 2 0 00-2 2v2a4 4 0 004 4h.1M17 4h3a2 2 0 012 2v2a4 4 0 01-4 4h-.1M7 4h10v6a5 5 0 01-10 0V4z"/></svg>
+        </div>
+        <span class="stat-num" id="stat-top">—</span>
+        <span class="stat-label">Top Score</span>
+      </div>
+    </div>
+
+    <!-- Host cities bar -->
+    <div class="host-cities">
+      <span style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted)">Host Countries</span>
+      <span class="host-city-pill">🇺🇸 United States</span>
+      <span class="host-divider">·</span>
+      <span class="host-city-pill">🇨🇦 Canada</span>
+      <span class="host-divider">·</span>
+      <span class="host-city-pill">🇲🇽 Mexico</span>
+      <span class="host-divider">·</span>
+      <span style="font-size:.74rem;color:var(--text-muted)">Jun 11 – Jul 19, 2026</span>
+    </div>
+
+    <!-- FIFA WC2026 Official Banner -->
+    <div class="wc-promo-banner">
+      <div class="promo-content">
+        <span class="promo-tag">⚽ Official Competition</span>
+        <h2>FIFA World Cup 2026™</h2>
+        <p>48 nations · 3 host countries (USA, Canada, Mexico) · June 11 – July 19, 2026</p>
+      </div>
+      <div class="promo-img-wrap">
+        <img src="gettyimages-2280577548-612x612.jpg" alt="FIFA World Cup 2026">
+      </div>
+    </div>
+
+    <!-- Star Players Spotlight -->
+    <div class="stars-section-title">⭐ Stars to Watch</div>
+    <div class="star-players">
+      <div class="player-card">
+        <div class="player-card-img">
+          <img src="gettyimages-1668971338-612x612.jpg" alt="Neymar Jr">
+        </div>
+        <div class="player-card-info">
+          <div class="player-card-name">Neymar Jr</div>
+          <div class="player-card-nation">🇧🇷 Brazil · Forward</div>
+          <span class="player-card-role">Fan Favourite</span>
+        </div>
+      </div>
+
+      <div class="trophy-card">
+        <div class="trophy-card-img">
+          <img src="view-soccer-gold-cup-field.jpg" alt="FIFA World Cup Trophy">
+        </div>
+        <div class="trophy-card-overlay">
+          <div class="trophy-card-badge">🏆 The Prize</div>
+          <h3>Who Lifts the Trophy?</h3>
+          <p>Predict every match · Climb the leaderboard</p>
+        </div>
+      </div>
+
+      <div class="player-card">
+        <div class="player-card-img">
+          <img src="gettyimages-2218666711-612x612.jpg" alt="Cristiano Ronaldo">
+        </div>
+        <div class="player-card-info">
+          <div class="player-card-name">C. Ronaldo</div>
+          <div class="player-card-nation">🇵🇹 Portugal · Forward</div>
+          <span class="player-card-role">All-Time Legend</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 246 Impex Store Ads ──────────────────────────────── -->
+    <div class="section-title">🛍️ 246 Impex Store — Featured Products</div>
+    <div class="store-ads-grid">
+
+      <a class="store-ad-card" href="https://246impex.com.np/product/samsung-galaxy-s26-ultra-5g-(12gb+512gb)-smartphone-or-200mp-camera-and-powerful-performance" target="_blank" rel="noopener">
+        <div class="store-ad-img-wrap">
+          <img src="prod-samsung-s26.jpg" alt="Samsung Galaxy S26 Ultra 5G">
+        </div>
+        <div class="store-ad-info">
+          <div class="store-ad-name">Samsung Galaxy S26 Ultra 5G</div>
+          <div class="store-ad-spec">12GB + 512GB · 200MP Camera</div>
+          <div class="store-ad-price">₹2,42,999</div>
+          <span class="store-ad-btn">View Product →</span>
+        </div>
+      </a>
+
+      <a class="store-ad-card" href="https://246impex.com.np/product/apple-iphone-17-pro-max" target="_blank" rel="noopener">
+        <div class="store-ad-img-wrap">
+          <img src="prod-iphone-17.jpg" alt="Apple iPhone 17 Pro Max">
+        </div>
+        <div class="store-ad-info">
+          <div class="store-ad-name">Apple iPhone 17 Pro Max</div>
+          <div class="store-ad-spec">256GB · Latest Model</div>
+          <div class="store-ad-price">₹2,47,999 <span class="store-ad-old">₹2,57,999</span></div>
+          <span class="store-ad-btn">View Product →</span>
+        </div>
+      </a>
+
+      <a class="store-ad-card" href="https://246impex.com.np/product/xiaomi-17t-(12gb-+-512gb)-co-engineered-with-leica" target="_blank" rel="noopener">
+        <div class="store-ad-img-wrap">
+          <img src="prod-xiaomi-17t.jpg" alt="Xiaomi 17T">
+        </div>
+        <div class="store-ad-info">
+          <div class="store-ad-name">Xiaomi 17T</div>
+          <div class="store-ad-spec">12GB + 512GB · Co-engineered with Leica</div>
+          <div class="store-ad-price">₹89,999</div>
+          <span class="store-ad-btn">View Product →</span>
+        </div>
+      </a>
+
+      <a class="store-ad-card" href="https://246impex.com.np/product/vivo-v70-v2538-(12gb+512gb)-5g-smartphone-6500mah-battery-120hz-amoled-display" target="_blank" rel="noopener">
+        <div class="store-ad-img-wrap">
+          <img src="prod-vivo-v70.jpg" alt="Vivo V70">
+        </div>
+        <div class="store-ad-info">
+          <div class="store-ad-name">Vivo V70</div>
+          <div class="store-ad-spec">12GB + 512GB · 6500mAh · 120Hz AMOLED</div>
+          <div class="store-ad-price">₹1,22,999</div>
+          <span class="store-ad-btn">View Product →</span>
+        </div>
+      </a>
+
+      <a class="store-ad-card" href="https://246impex.com.np/product/logitech-mk215-wireless-keyboard-and-mouse-combo-oror-compact-space-saving-design" target="_blank" rel="noopener">
+        <div class="store-ad-img-wrap">
+          <img src="prod-logitech-mk215.jpg" alt="Logitech MK215 Wireless Combo">
+        </div>
+        <div class="store-ad-info">
+          <div class="store-ad-name">Logitech MK215 Wireless Combo</div>
+          <div class="store-ad-spec">Keyboard + Mouse · Compact Design</div>
+          <div class="store-ad-price">₹4,199</div>
+          <span class="store-ad-btn">View Product →</span>
+        </div>
+      </a>
+
+      <a class="store-ad-card store-ad-card--cta" href="https://246impex.com.np/" target="_blank" rel="noopener">
+        <div class="store-ad-img-wrap">
+          <span class="store-ad-icon">🛒</span>
+        </div>
+        <div class="store-ad-info">
+          <div class="store-ad-name">Shop All Products</div>
+          <div class="store-ad-spec">Phones · Laptops · Accessories · Audio</div>
+          <div class="store-ad-price" style="color:var(--blue)">246impex.com.np</div>
+          <span class="store-ad-btn">Visit Store →</span>
+        </div>
+      </a>
+
+    </div>
+
+    <div class="section-title">Rankings</div>
+    <div id="lb-body">
+      <div class="server-loader">
+        <div class="spinner"></div>
+        <p>Connecting to 246 Impex Server…</p>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <img src="logo.jpeg" alt="246 Impex" class="footer-logo">
+        <div>
+          <div class="footer-brand-name">246 Impex Fantasy</div>
+          <div class="footer-brand-sub">Powered by 246 Impex · FIFA WC 2026</div>
+        </div>
+      </div>
+      <div class="footer-wc-badges">
+        <span class="footer-badge">🏆 32 Teams</span>
+        <span class="footer-badge">⚽ 32 Matches</span>
+        <span class="footer-badge">🇺🇸🇨🇦🇲🇽 3 Host Nations</span>
+        <span class="footer-badge">🏆 Jun 11 – Jul 19</span>
+      </div>
+    </div>
+    <div class="footer-contact">
+      <a href="https://246impex.com.np/" target="_blank" rel="noopener" class="footer-contact-link">🌐 246impex.com.np</a>
+      <a href="https://wa.me/9779843737788" target="_blank" rel="noopener" class="footer-contact-link">💬 WhatsApp: 9843737788</a>
+      <a href="https://www.facebook.com/246impexnepal/" target="_blank" rel="noopener" class="footer-contact-link">📘 Facebook: 246impexnepal</a>
+    </div>
+    <div class="footer-copyright">© 2026 246 Impex · All rights reserved · FIFA World Cup 2026 Fantasy Prediction Game</div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="data.js?v=20260628"></script>
+  <script src="script.js?v=20260628"></script>
+
+  <script>
+    // ── Prize Hub Splash — once per session ──────────────────
+    (function () {
+      const KEY    = 'prize_splash_seen_246';
+      const splash = document.getElementById('prize-splash');
+      const btn    = document.getElementById('splash-close-btn');
+      if (!splash || !btn) return;
+
+      function closeSplash() {
+        splash.classList.add('splash-hiding');
+        setTimeout(() => { splash.style.display = 'none'; }, 380);
+        sessionStorage.setItem(KEY, '1');
+      }
+
+      btn.addEventListener('click', closeSplash);
+      splash.querySelector('.splash-backdrop').addEventListener('click', closeSplash);
+
+      if (!sessionStorage.getItem(KEY)) {
+        splash.style.display = 'flex';
+        // Trigger entrance animation on next frame
+        requestAnimationFrame(() => splash.classList.add('splash-visible'));
+      }
+    })();
+  </script>
+</body>
+</html>
